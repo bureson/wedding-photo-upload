@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import type { LoginResult } from "../hooks";
+import { useT } from "../i18n";
 
 interface Props {
   onLogin: () => Promise<LoginResult>;
@@ -7,14 +8,10 @@ interface Props {
   onBack: () => void;
 }
 
-const MESSAGES: Record<Exclude<LoginResult, "ok" | "cancelled">, string> = {
-  "not-admin": "Tenhle Google účet není na seznamu novomanželů.",
-  error: "Přihlášení se nepovedlo. Zkuste to prosím znovu.",
-};
-
 export function LoginScreen({ onLogin, onSuccess, onBack }: Props) {
+  const { t } = useT();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<"not-admin" | "error" | null>(null);
 
   async function submit() {
     if (busy) return;
@@ -23,22 +20,22 @@ export function LoginScreen({ onLogin, onSuccess, onBack }: Props) {
     const result = await onLogin();
     setBusy(false);
     if (result === "ok") onSuccess();
-    else if (result !== "cancelled") setError(MESSAGES[result]);
+    else if (result !== "cancelled") setError(result);
   }
 
   return (
     <div class="login fade-up">
       <header class="bar">
-        <button class="back" aria-label="Zpět" onClick={onBack}>←</button>
-        <h2>Pro novomanžele</h2>
+        <button class="back" aria-label={t.back} onClick={onBack}>←</button>
+        <h2>{t.loginTitle}</h2>
       </header>
-      <p>Přihlaste se Google účtem, který je na seznamu novomanželů.</p>
+      <p>{t.loginBody}</p>
       <div class="form">
         <button class="btn small google" onClick={submit} disabled={busy}>
           <GoogleMark />
-          {busy ? "Přihlašuji…" : "Přihlásit se přes Google"}
+          {busy ? t.loggingIn : t.loginButton}
         </button>
-        {error && <div class="error">{error}</div>}
+        {error && <div class="error">{error === "not-admin" ? t.notAdmin : t.loginError}</div>}
       </div>
     </div>
   );

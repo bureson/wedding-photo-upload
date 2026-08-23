@@ -1,7 +1,7 @@
 /** Swaying bride & groom holding hands, with popping confetti hearts. */
-export function Couple() {
+export function Couple({ label }: { label: string }) {
   return (
-    <svg class="couple" viewBox="0 0 240 120" aria-label="Nevěsta a ženich">
+    <svg class="couple" viewBox="0 0 240 120" role="img" aria-label={label}>
       <g stroke="#3a3128" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
         {/* bride */}
         <g class="sway" style={{ transformOrigin: "80px 104px" }}>

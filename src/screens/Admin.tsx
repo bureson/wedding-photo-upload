@@ -2,7 +2,8 @@ import { useState } from "preact/hooks";
 import { deleteDoc, doc, setDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, functions } from "../firebase";
-import { czechPhotos, type AppSettings, type Photo } from "../types";
+import { useT } from "../i18n";
+import type { AppSettings, Photo } from "../types";
 
 interface Props {
   photos: Photo[];
@@ -14,6 +15,7 @@ interface Props {
 type DownloadState = "idle" | "busy" | "done" | "error";
 
 export function AdminScreen({ photos, settings, onLogout, onBack }: Props) {
+  const { t } = useT();
   const [download, setDownload] = useState<DownloadState>("idle");
 
   async function toggleUploads() {
@@ -21,7 +23,7 @@ export function AdminScreen({ photos, settings, onLogout, onBack }: Props) {
   }
 
   async function remove(p: Photo) {
-    if (!confirm(`Smazat fotku od „${p.who || "Anonym"}“?`)) return;
+    if (!confirm(t.confirmDelete(p.who || t.anonymous))) return;
     await deleteDoc(doc(db, "photos", p.id)); // Cloud Function removes the files
   }
 
@@ -40,45 +42,45 @@ export function AdminScreen({ photos, settings, onLogout, onBack }: Props) {
     }
   }
 
-  const downloadLabel = { idle: "ZIP ↓", busy: "Připravuji…", done: "Staženo ✓", error: "Chyba — zkusit znovu" }[download];
+  const downloadLabel = { idle: t.zipIdle, busy: t.zipBusy, done: t.zipDone, error: t.zipError }[download];
 
   return (
     <div class="admin fade-up">
       <header class="bar">
-        <button class="back" aria-label="Zpět" onClick={onBack}>←</button>
+        <button class="back" aria-label={t.back} onClick={onBack}>←</button>
         <div class="grow">
-          <h2>Správa</h2>
-          <div class="sub">{czechPhotos(photos.length)} od hostů</div>
+          <h2>{t.adminTitle}</h2>
+          <div class="sub">{t.fromGuests(t.photos(photos.length))}</div>
         </div>
-        <button class="quiet" onClick={onLogout}>Odhlásit</button>
+        <button class="quiet" onClick={onLogout}>{t.signOut}</button>
       </header>
 
       <div class="rows">
         <div class="row">
           <div>
-            <div class="t">Nahrávání fotek</div>
-            <div class="s">{settings.uploadsEnabled ? "Hosté můžou nahrávat" : "Pozastaveno — hosté nenahrají nic"}</div>
+            <div class="t">{t.uploadsTitle}</div>
+            <div class="s">{settings.uploadsEnabled ? t.uploadsOn : t.uploadsOff}</div>
           </div>
           <button class="switch" role="switch" aria-checked={settings.uploadsEnabled} onClick={toggleUploads}>
             <span />
           </button>
         </div>
         <button class="row" onClick={downloadAll} disabled={download === "busy" || photos.length === 0}>
-          <span class="t">Stáhnout všechny fotky</span>
+          <span class="t">{t.downloadAll}</span>
           <span class="act">{downloadLabel}</span>
         </button>
       </div>
 
-      <div class="section">Fotky hostů</div>
+      <div class="section">{t.guestPhotos}</div>
       {photos.length === 0 ? (
-        <div class="empty">Žádné fotky. Zatím.</div>
+        <div class="empty">{t.noPhotos}</div>
       ) : (
         <div class="grid3">
           {photos.map((g) => (
             <div class="tile" key={g.id}>
               {g.thumbUrl ? <div class="img" style={{ backgroundImage: `url(${g.thumbUrl})` }} /> : <div class="ph" />}
-              <div class="who">{g.who || "Anonym"}</div>
-              <button class="x danger" aria-label="Smazat fotku" onClick={() => remove(g)}>✕</button>
+              <div class="who">{g.who || t.anonymous}</div>
+              <button class="x danger" aria-label={t.deletePhoto} onClick={() => remove(g)}>✕</button>
             </div>
           ))}
         </div>

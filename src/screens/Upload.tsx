@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Couple } from "../Couple";
-import { czechPhotos, rot } from "../types";
+import { setLang, useT } from "../i18n";
+import { rot } from "../types";
 import { uploadPhotos, type PendingPhoto, type UploadProgress } from "../upload";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, onAdmin }: Props) {
+  const { t, lang } = useT();
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
   const [name, setName] = useState(() => localStorage.getItem("who") ?? "");
   const [caption, setCaption] = useState("");
@@ -50,7 +52,7 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
       setCaption("");
     } catch (err) {
       console.error(err);
-      setError("Nahrávání se nepovedlo. Zkuste to prosím znovu.");
+      setError(t.uploadFailed);
     } finally {
       setSending(null);
     }
@@ -59,33 +61,33 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
   return (
     <>
       <header class="hero">
-        <div class="hand">byli jste u toho ♡</div>
+        <div class="hand">{t.tagline}</div>
         <h1>Irča &amp; Ondra</h1>
-        <div class="date">26. ZÁŘÍ 2026</div>
-        <Couple />
+        <div class="date">{t.date}</div>
+        <Couple label={t.coupleAlt} />
       </header>
 
       {sent === null ? (
         <>
           {uploadsEnabled === null ? (
-            <div class="drop loading" aria-busy="true" aria-label="Načítám">
+            <div class="drop loading" aria-busy="true" aria-label={t.loading}>
               <div class="tape" />
               <div class="face">
                 <div class="dot pulse" />
                 <div class="title skeleton" />
                 <div class="hint skeleton" />
               </div>
-              <div class="scribble">chvilku…</div>
+              <div class="scribble">{t.loadingScribble}</div>
             </div>
           ) : uploadsEnabled ? (
             <label class="drop is-button">
               <div class="tape" />
               <div class="face">
                 <div class="dot">+</div>
-                <div class="title">Přidat fotky</div>
-                <div class="hint">Klepněte a vyberte z galerie</div>
+                <div class="title">{t.addPhotos}</div>
+                <div class="hint">{t.addHint}</div>
               </div>
-              <div class="scribble">sem s vašimi úlovky!</div>
+              <div class="scribble">{t.addScribble}</div>
               <input type="file" accept="image/*" multiple onChange={pick} disabled={!!sending} />
             </label>
           ) : (
@@ -93,10 +95,10 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
               <div class="tape" />
               <div class="face">
                 <div class="dot sleep">💤</div>
-                <div class="title">Foťáky si daly pauzu</div>
-                <div class="hint">Nahrávání je teď pozastavené</div>
+                <div class="title">{t.pausedTitle}</div>
+                <div class="hint">{t.pausedHint}</div>
               </div>
-              <div class="scribble">hned jsme zpátky ♡</div>
+              <div class="scribble">{t.pausedScribble}</div>
             </div>
           )}
 
@@ -106,7 +108,7 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
                 {photos.map((p, i) => (
                   <div class="mini fade-in" key={p.src} style={{ transform: `rotate(${rot(i)}deg)` }}>
                     <div class="img" style={{ backgroundImage: `url(${p.src})` }} />
-                    <button class="x" aria-label="Odebrat fotku" onClick={() => remove(i)} disabled={!!sending}>×</button>
+                    <button class="x" aria-label={t.removePhoto} onClick={() => remove(i)} disabled={!!sending}>×</button>
                   </div>
                 ))}
               </div>
@@ -117,7 +119,7 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
                   type="text"
                   value={caption}
                   onInput={(e) => setCaption((e.currentTarget as HTMLInputElement).value)}
-                  placeholder="Krátký vzkaz nebo popisek (nepovinné)"
+                  placeholder={t.captionPlaceholder}
                   maxLength={200}
                 />
                 {showNameField && (
@@ -126,7 +128,7 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
                     type="text"
                     value={name}
                     onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
-                    placeholder="Vaše jméno (nepovinné)"
+                    placeholder={t.namePlaceholder}
                     maxLength={60}
                     autocomplete="name"
                   />
@@ -136,7 +138,7 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
                 )}
                 {error && <div class="error">{error}</div>}
                 <button class="btn" onClick={send} disabled={!!sending}>
-                  {sending ? `Odesílám… ${sending.done}/${sending.total}` : `Poslat ${czechPhotos(photos.length)}`}
+                  {sending ? t.sending(sending.done, sending.total) : t.send(t.photos(photos.length))}
                 </button>
               </div>
             </>
@@ -144,18 +146,28 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
         </>
       ) : (
         <div class="thanks fade-up">
-          <div class="hand">jste hvězdy!</div>
-          <h2>Odesláno — {czechPhotos(sent)} máme!</h2>
-          <p>Fotky letí rovnou k novomanželům — a do společné galerie.</p>
-          <button class="btn-outline" onClick={() => setSent(null)}>Přidat další fotky</button>
+          <div class="hand">{t.thanksScribble}</div>
+          <h2>{t.thanksHeadline(t.photos(sent))}</h2>
+          <p>{t.thanksBody}</p>
+          <button class="btn-outline" onClick={() => setSent(null)}>{t.addMore}</button>
         </div>
       )}
 
-      <button class="link-hand" onClick={onGallery}>mrkněte, co nafotili ostatní →</button>
+      <button class="link-hand" onClick={onGallery}>{t.galleryLink}</button>
 
       <footer class="foot">
-        <span>Fotky uvidí novomanželé a hosté ve společné galerii.</span>
-        <button onClick={onAdmin}>pro novomanžele</button>
+        <span>{t.footerNote}</span>
+        <div class="foot-row">
+          <button onClick={onAdmin}>{t.forCouple}</button>
+          <span aria-hidden="true">·</span>
+          <button
+            class="lang"
+            onClick={() => setLang(lang === "cs" ? "en" : "cs")}
+            aria-label={lang === "cs" ? "Switch to English" : "Přepnout do češtiny"}
+          >
+            {lang === "cs" ? "English" : "Česky"}
+          </button>
+        </div>
       </footer>
     </>
   );

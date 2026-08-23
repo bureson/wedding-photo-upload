@@ -25,13 +25,6 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = { uploadsEnabled: true };
 
-/** Czech plural for "photo". */
-export function czechPhotos(n: number): string {
-  if (n === 1) return "1 fotku";
-  if (n >= 2 && n <= 4) return `${n} fotky`;
-  return `${n} fotek`;
-}
-
 /** Alternating tilt for polaroid cards. */
 export function rot(i: number): number {
   return [-3, 2, -2, 3, -1, 2][i % 6];

@@ -1,94 +1,149 @@
-# Irča & Ondra — svatební fotky
+<p align="center">
+  <img src="public/icon-192.png" width="96" alt="App icon">
+</p>
 
-Mobile-first page where wedding guests upload photos, browse a shared gallery, and the couple
-can moderate. Preact + Vite on the front, Firebase (Hosting, Auth, Firestore, Storage, Functions) behind.
+<h1 align="center">Irča &amp; Ondra — wedding photos</h1>
+
+<p align="center">
+  A page for wedding guests: upload photos from your phone, browse the shared gallery —<br>
+  and the newlyweds download everything with one click.
+</p>
+
+<p align="center">
+  <a href="https://wedding-photo-upload-6a020.web.app"><strong>wedding-photo-upload-6a020.web.app</strong></a>
+</p>
+
+---
+
+## Features
+
+| For guests | For the couple |
+|---|---|
+| 📸 Pick photos from the phone gallery, several at once | 🔐 Google sign-in (allow-listed emails only) |
+| ✍️ Optional name and message | ⏸️ Pause uploads with a single switch |
+| 📶 Reliable uploads on weak venue wifi (resumable, with progress) | 🗑️ Delete unwanted photos |
+| 🖼️ Live shared gallery with thumbnails | 📦 Download all originals as a ZIP |
+
+No sign-up, no login for guests — just a QR code.
+
+🌍 **Czech and English.** The language follows the phone's settings (Czech/Slovak → Czech,
+anything else → English). Guests can switch in the footer, and `?lang=en` / `?lang=cs` in the
+URL forces a language — handy for a second QR code for international guests.
 
 ## How it works
 
 ```
 guest phone ──upload──▶ Storage  uploads/<uid>/<id>.jpg
                             │  onPhotoUploaded (Cloud Function)
-                            ├─▶ thumbs/<id>.jpg            (800px JPEG)
+                            ├─▶ thumbs/<id>.jpg            800px thumbnail
                             └─▶ Firestore photos/<id>      {who, caption, url, thumbUrl, createdAt}
-gallery ◀──live onSnapshot── Firestore photos
-admin   ──Google SSO─▶ allowed iff Firestore admins/<email> exists
-        ──toggle────▶ Firestore settings/app {uploadsEnabled}   (Storage rules read this)
-        ──delete────▶ Firestore photos/<id>  → onPhotoDeleted removes files
-        ──ZIP──────▶ downloadAll → exports/<ts>.zip → download URL
+gallery ◀──live (onSnapshot)── Firestore photos
+admin   ──Google SSO──▶ allowed iff Firestore admins/<email> exists
+        ──toggle─────▶ Firestore settings/app {uploadsEnabled}   (enforced by Storage rules)
+        ──delete─────▶ Firestore photos/<id> → onPhotoDeleted removes the files
+        ──ZIP────────▶ downloadAll → exports/<timestamp>.zip → download link
 ```
 
-- Guests are signed in anonymously; they never see a login.
-- Storage rules: images only, < 50 MB, only while `uploadsEnabled` is true.
-- Photo docs are created only by the function, so clients can't spoof gallery entries.
+- Guests are signed in **anonymously** (invisible to them; only so security rules can apply).
+- Storage rules: images only, max 50 MB, and only while uploads are enabled.
+- Photo documents are created exclusively by the Cloud Function — nothing can be spoofed into the gallery from a browser.
 
-## One-time setup
+## Stack
 
-1. **Create a Firebase project** at <https://console.firebase.google.com> and upgrade to the
-   Blaze plan (required for Storage + Functions; expect a few cents for a wedding).
-2. Enable **Authentication → Sign-in method → Anonymous** *and* **Google**.
-3. Create **Firestore** (production mode, region `europe-west1` or `eur3`) and **Storage**.
-4. In Firestore, create the admin allowlist: collection `admins`, one document per
-   admin whose **document ID is the lowercase Google email** (fields can be empty), e.g.
-   `admins/ondrej@triggerz.net`.
-5. Add a **Web app** in Project settings and copy its config into `.env.production`
-   (already filled in for this project; `.env.local` can override locally).
-6. Put your project id in `.firebaserc`.
-7. Install deps:
-   ```sh
-   npm install
-   npm --prefix functions install
-   ```
-8. Deploy everything:
-   ```sh
-   firebase login
-   npm run deploy
-   ```
-   Your site is at `https://<project-id>.web.app` — put that in the QR code.
+**Frontend** · [Preact](https://preactjs.com) + [Vite](https://vite.dev) + TypeScript, no router or state library
+**Backend** · Firebase — Hosting, Auth (anonymous + Google), Firestore, Storage, Cloud Functions 2nd gen (Node 22)
+**Functions** · [sharp](https://sharp.pixelplumbing.com) for thumbnails, [archiver](https://www.archiverjs.com) for the ZIP
 
-## Continuous deployment (GitHub Actions)
+```
+src/
+  App.tsx            screen switching (upload / gallery / login / admin)
+  screens/           Upload, Gallery, Login, Admin
+  hooks.ts           useAuth, useSettings, useGallery
+  i18n.ts            Czech + English strings, device language detection
+  upload.ts          resumable uploads to Storage
+  Couple.tsx         animated bride & groom in the header
+  styles.css         design tokens and styles
+functions/src/index.ts   onPhotoUploaded, onPhotoDeleted, downloadAll
+firestore.rules · storage.rules
+public/            icons, web manifest
+```
 
-`.github/workflows/deploy.yml` typechecks and builds on every PR, and deploys hosting, rules
-and functions on every push to `main`. One-time setup:
-
-1. Google Cloud console → **IAM & Admin → Service Accounts** → *Create service account*
-   (e.g. `github-deploy`). Grant roles: **Firebase Admin**, **Cloud Functions Admin**,
-   **Cloud Run Admin**, **Service Account User**, **Cloud Build Editor**,
-   **Artifact Registry Administrator**. (Or simply **Editor** + **Service Account User**.)
-2. Keys tab → *Add key → JSON*. Download it.
-3. GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**
-   named `FIREBASE_SERVICE_ACCOUNT`, paste the whole JSON file as the value.
-4. (Optional) Settings → Environments → `production` → add required reviewers if you want a
-   manual approval gate before deploys.
-
-The public Firebase web config is committed in `.env.production`; `.env.local` overrides it locally.
-
-## Local development
+## Development
 
 ```sh
-# Terminal 1 — emulators (Auth, Firestore, Storage, Functions)
-npm --prefix functions run watch   # keeps functions/lib fresh
-npm run emulators
+npm install
+npm --prefix functions install
+npm run dev          # http://localhost:5173 — talks to the live Firebase project
+```
 
-# Terminal 2 — Vite dev server, pointed at the emulators
-# (set VITE_USE_EMULATORS=true in .env.local)
+The (public) Firebase config lives in `.env.production`; create `.env.local` to override it
+locally (template in `.env.example`).
+
+### With emulators
+
+```sh
+# terminal 1
+npm --prefix functions run watch
+npm run emulators                      # UI: http://127.0.0.1:4000
+
+# terminal 2 — set VITE_USE_EMULATORS=true in .env.local
 npm run dev
 ```
 
-Emulator UI: <http://127.0.0.1:4000>. In the emulator, add your email under `admins` in the
-Firestore tab; the Auth emulator lets you sign in with Google using any made-up account.
+In the emulator, add your email to the `admins` collection in Firestore; the Auth emulator lets
+you sign in with Google using any made-up account.
 
-## Tweaks you may want
+## Deployment
 
-- Names/date/copy: `src/screens/Upload.tsx`.
-- Colours & fonts: `src/styles.css` (`:root` tokens).
-- Thumbnail size / quality: `THUMB_WIDTH` in `functions/src/index.ts`.
-- Allow video: change `accept="image/*"` in `Upload.tsx` and `contentType.matches('image/.*')`
-  in `storage.rules`; thumbnails will be skipped for videos (gallery shows a placeholder).
-- Private gallery until after the wedding: set `allow read: if isAdmin();` on `photos` in
-  `firestore.rules`.
+### Automatic (GitHub Actions)
+
+- **Pull request** → typecheck, build, temporary preview URL posted as a PR comment.
+- **Push to `main`** → typecheck, build, deploy to the live site.
+
+CI deploys **hosting** (the frontend) only. It was set up with `firebase init hosting:github`,
+which created the service account and the GitHub secret
+`FIREBASE_SERVICE_ACCOUNT_WEDDING_PHOTO_UPLOAD_6A020` automatically.
+
+### Manual (functions and rules)
+
+These change rarely and are deployed by hand:
+
+```sh
+firebase login
+firebase deploy --only functions,firestore,storage
+```
+
+## Administration
+
+### Adding an admin
+
+Firebase console → **Firestore** → collection `admins` → new document with **ID = lowercase email**
+(e.g. `ondrej@triggerz.net`). No fields needed. That's it — no redeploy.
+
+### The admin screen
+
+At the bottom of the page, *pro novomanžele* → Google sign-in → **Správa**:
+pause uploads, delete a photo, download the ZIP.
+
+The ZIP contains originals named `2026-09-26-21-14-05_Teta_Jana_0001.jpg` (time, name, sequence).
+Each download creates a new file under `exports/` in Storage — old ones can be deleted in the console.
+
+## Customising
+
+| What | Where |
+|---|---|
+| Names | `src/screens/Upload.tsx` |
+| Date and all UI text (both languages) | `src/i18n.ts` |
+| Colours and fonts | `src/styles.css` (`:root`) |
+| Thumbnail size | `THUMB_WIDTH` in `functions/src/index.ts` |
+| Allow video | `accept="image/*"` in `Upload.tsx` and `contentType.matches('image/.*')` in `storage.rules` (thumbnails are skipped for video) |
+| Gallery visible to admins only | in `firestore.rules`, set `allow read: if isAdmin();` on `photos` |
 
 ## Notes
 
-- iOS converts HEIC → JPEG when picking from the photo library, so thumbnails normally work.
-  If a raw HEIC slips through, the photo is still stored; only the thumbnail is skipped.
-- Firebase web config in `.env.local` is not secret — rules are the security boundary.
+- iOS converts HEIC → JPEG when picking from the photo library, so thumbnails work. If a raw HEIC
+  does slip through, the photo is still stored; only the thumbnail is skipped.
+- The Firebase web config in the repo **is not a secret** — it identifies the project; the rules are
+  the security boundary.
+- The default Storage bucket is in `us-west1`, so `onPhotoUploaded` runs there; the other functions
+  run in `europe-west1`.

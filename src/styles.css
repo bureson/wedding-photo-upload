@@ -152,6 +152,7 @@ a { color: var(--accent-dark); }
 }
 .foot span { font-size: 12px; color: var(--ink-faint); }
 .foot button { border: none; background: transparent; font-size: 11px; color: var(--ink-ghost); padding: 6px; }
+.foot-row { display: flex; align-items: center; gap: 2px; color: var(--ink-ghost); font-size: 11px; }
 
 /* Sub-page header */
 .bar { display: flex; align-items: center; gap: 12px; padding: 28px 0 6px; }
