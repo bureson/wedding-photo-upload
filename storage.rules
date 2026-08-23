@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function uploadsEnabled() {
+      // Cross-service rule: Storage reads the Firestore flag the admin toggles.
+      // If the settings doc doesn't exist yet, uploads are allowed.
+      return !firestore.exists(/databases/(default)/documents/settings/app)
+        || firestore.get(/databases/(default)/documents/settings/app).data.uploadsEnabled == true;
+    }
+
+    // Guests: write-only into their own folder, images only, max 50 MB, while uploads are enabled.
+    match /uploads/{uid}/{file} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 50 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*')
+        && uploadsEnabled();
+      allow update, delete: if false;
+    }
+
+    // Thumbnails are written by the Cloud Function; public read.
+    match /thumbs/{file} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ZIP exports: written by the Cloud Function, downloaded via tokenised URL (no rule read needed).
+    match /exports/{file} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,25 @@
+# Design mockup (Claude Design canvas) — not part of the shipped app
+.mockup/
+
+# Dependencies & build output
+node_modules/
+dist/
+functions/lib/
+
+# Local env (Firebase web config + emulator flag)
+.env.local
+.env.*.local
+
+# Firebase
+.firebase/
+*-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+.runtimeconfig.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

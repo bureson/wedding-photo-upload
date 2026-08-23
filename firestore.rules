@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Admin = signed in with Google (verified email) AND listed in admins/{email}.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
+    }
+
+    // admins/{email}: managed in the Firebase console only. A user may check their own entry.
+    match /admins/{email} {
+      allow read: if request.auth != null && request.auth.token.email.lower() == email;
+      allow write: if false;
+    }
+
+    // Photo documents are created only by the onPhotoUploaded Cloud Function (Admin SDK bypasses rules).
+    // Everyone may read the gallery; only admins may delete.
+    match /photos/{photoId} {
+      allow read: if true;
+      allow create, update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // settings/app: { uploadsEnabled: bool }
+    match /settings/app {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['uploadsEnabled'])
+        && request.resource.data.uploadsEnabled is bool;
+    }
+  }
+}
