@@ -18,6 +18,7 @@ const dict = {
     loading: "Načítám",
     loadingScribble: "chvilku…",
     removePhoto: "Odebrat fotku",
+    addMoreTile: "Přidat další fotky",
     // form
     captionPlaceholder: "Krátký vzkaz nebo popisek (nepovinné)",
     namePlaceholder: "Vaše jméno (nepovinné)",
@@ -39,8 +40,12 @@ const dict = {
     noPhotos: "Žádné fotky. Zatím.",
     processing: "zpracovává se…",
     anonymous: "Anonym",
+    you: "Vy",
     back: "Zpět",
     openPhoto: "Otevřít fotku",
+    close: "Zavřít",
+    previous: "Předchozí",
+    next: "Další",
     // login
     loginTitle: "Pro novomanžele",
     loginBody: "Přihlaste se Google účtem, který je na seznamu novomanželů.",
@@ -62,6 +67,13 @@ const dict = {
     guestPhotos: "Fotky hostů",
     deletePhoto: "Smazat fotku",
     confirmDelete: (who: string) => `Smazat fotku od „${who}“?`,
+    editPhoto: "Upravit fotku",
+    editName: "Jméno",
+    editCaption: "Popisek",
+    save: "Uložit",
+    saving: "Ukládám…",
+    cancel: "Zrušit",
+    saveFailed: "Uložení se nepovedlo.",
     // plural
     photos: (n: number) => (n === 1 ? "1 fotku" : n >= 2 && n <= 4 ? `${n} fotky` : `${n} fotek`),
   },
@@ -78,6 +90,7 @@ const dict = {
     loading: "Loading",
     loadingScribble: "one sec…",
     removePhoto: "Remove photo",
+    addMoreTile: "Add more photos",
     captionPlaceholder: "A short message or caption (optional)",
     namePlaceholder: "Your name (optional)",
     send: (n: string) => `Send ${n}`,
@@ -95,8 +108,12 @@ const dict = {
     noPhotos: "No photos. Yet.",
     processing: "processing…",
     anonymous: "Anonymous",
+    you: "You",
     back: "Back",
     openPhoto: "Open photo",
+    close: "Close",
+    previous: "Previous",
+    next: "Next",
     loginTitle: "For the newlyweds",
     loginBody: "Sign in with a Google account that's on the newlyweds' list.",
     loginButton: "Sign in with Google",
@@ -116,6 +133,13 @@ const dict = {
     guestPhotos: "Guest photos",
     deletePhoto: "Delete photo",
     confirmDelete: (who: string) => `Delete the photo from “${who}”?`,
+    editPhoto: "Edit photo",
+    editName: "Name",
+    editCaption: "Caption",
+    save: "Save",
+    saving: "Saving…",
+    cancel: "Cancel",
+    saveFailed: "Saving failed.",
     photos: (n: number) => (n === 1 ? "1 photo" : `${n} photos`),
   },
 } satisfies Record<Lang, unknown>;
@@ -136,9 +160,14 @@ function detect(): Lang {
   } catch {
     /* storage unavailable */
   }
+  // Respect the order of the device's preferred languages: the first one we
+  // support wins (cs/sk → Czech, en → English). Nothing recognised → English.
   const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
-  // Czech and Slovak speakers get Czech; everyone else English.
-  return langs.some((l) => /^(cs|sk)\b/i.test(l)) ? "cs" : "en";
+  for (const l of langs) {
+    if (/^(cs|sk)\b/i.test(l)) return "cs";
+    if (/^en\b/i.test(l)) return "en";
+  }
+  return "en";
 }
 
 let current: Lang = detect();

@@ -3,7 +3,7 @@
   "short_name": "Svatba",
   "description": "Nahrajte fotky ze svatby Irči a Ondry.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#f3efe8",
   "theme_color": "#f3efe8",
   "lang": "cs",

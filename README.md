@@ -39,13 +39,13 @@ guest phone ──upload──▶ Storage  uploads/<uid>/<id>.jpg
                             └─▶ Firestore photos/<id>      {who, caption, url, thumbUrl, createdAt}
 gallery ◀──live (onSnapshot)── Firestore photos
 admin   ──Google SSO──▶ allowed iff Firestore admins/<email> exists
-        ──toggle─────▶ Firestore settings/app {uploadsEnabled}   (enforced by Storage rules)
+        ──toggle─────▶ Firestore settings/app {uploadsEnabled}   (enforced by onPhotoUploaded)
         ──delete─────▶ Firestore photos/<id> → onPhotoDeleted removes the files
         ──ZIP────────▶ downloadAll → exports/<timestamp>.zip → download link
 ```
 
 - Guests are signed in **anonymously** (invisible to them; only so security rules can apply).
-- Storage rules: images only, max 50 MB, and only while uploads are enabled.
+- Storage rules: images only, max 50 MB, own folder only. The "uploads paused" switch is enforced by the Cloud Function.
 - Photo documents are created exclusively by the Cloud Function — nothing can be spoofed into the gallery from a browser.
 
 ## Stack
@@ -110,9 +110,16 @@ These change rarely and are deployed by hand:
 
 ```sh
 firebase login
-firebase deploy --only functions,firestore,storage
+firebase deploy --only "functions,firestore,storage"
 ```
 
+### How "pause uploads" is enforced
+
+The admin switch writes `settings/app.uploadsEnabled`. The upload page hides the upload card when
+it's false, and `onPhotoUploaded` deletes any file that still arrives while paused (e.g. from a
+page opened before the pause). Storage rules deliberately don't read Firestore — a cross-service
+`firestore.get()` in `storage.rules` was unreliable on this project (random `storage/unauthorized`
+for valid uploads), so the check lives in the function instead.
 ## Administration
 
 ### Adding an admin
@@ -145,5 +152,9 @@ Each download creates a new file under `exports/` in Storage — old ones can be
   does slip through, the photo is still stored; only the thumbnail is skipped.
 - The Firebase web config in the repo **is not a secret** — it identifies the project; the rules are
   the security boundary.
-- The default Storage bucket is in `us-west1`, so `onPhotoUploaded` runs there; the other functions
-  run in `europe-west1`.
+- Everything runs in `europe-west1` (bucket, functions, Firestore). If the bucket is ever recreated
+  elsewhere, `onPhotoUploaded` must move to the bucket's region (`PHOTOS_BUCKET` in
+  `functions/src/index.ts`).
+- Photos are downscaled on the phone before upload (longest edge 2048 px, JPEG 85 %) — ~1 MB instead
+  of 4–8 MB, which is what makes uploads fast on venue wifi. EXIF is stripped in the process; the
+  upload time is kept as `createdAt`.

@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+﻿import { randomUUID } from "node:crypto";
 import { PassThrough } from "node:stream";
 import archiver from "archiver";
 import sharp from "sharp";
@@ -14,11 +14,13 @@ import { logger } from "firebase-functions";
 initializeApp();
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
+/** The photo bucket (europe-west1). Storage triggers must run in the bucket's region. */
+const PHOTOS_BUCKET = "wedding-photo-upload-6a020.firebasestorage.app";
 const THUMB_WIDTH = 800;
 const UPLOADS_PREFIX = "uploads/";
 
 const db = () => getFirestore();
-const bucket = () => getStorage().bucket();
+const bucket = () => getStorage().bucket(PHOTOS_BUCKET);
 
 /** Public, tokenised download URL (works without Storage rules granting read). */
 function tokenUrl(bucketName: string, path: string, token: string): string {
@@ -31,8 +33,8 @@ function tokenUrl(bucketName: string, path: string, token: string): string {
  *    → create photos/<id> document for the gallery.
  */
 export const onPhotoUploaded = onObjectFinalized(
-  // Storage triggers must run in the bucket's region (the default bucket was created in us-west1).
-  { region: "us-west1", memory: "1GiB", timeoutSeconds: 120 },
+  // Storage triggers must run in the bucket's region.
+  { bucket: PHOTOS_BUCKET, region: "europe-west1", memory: "1GiB", timeoutSeconds: 120 },
   async (event) => {
     const { name: path, contentType, metadata, bucket: bucketName } = event.data;
     if (!path.startsWith(UPLOADS_PREFIX)) return;
@@ -47,6 +49,14 @@ export const onPhotoUploaded = onObjectFinalized(
     const caption = (metadata?.caption ?? "").slice(0, 200);
 
     const file = bucket().file(path);
+
+    // Enforce the admin's "uploads paused" switch: discard anything that arrives while paused.
+    const settings = await db().doc("settings/app").get();
+    if (settings.exists && settings.get("uploadsEnabled") === false) {
+      await file.delete({ ignoreNotFound: true });
+      logger.info("Uploads paused — discarded", { path });
+      return;
+    }
 
     // Ensure the original has a download token so the gallery can link to it.
     let originalToken = metadata?.firebaseStorageDownloadTokens?.split(",")[0];

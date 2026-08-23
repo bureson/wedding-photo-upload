@@ -58,16 +58,26 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
     }
   }
 
+  // Flow: landing (polaroid) → review (picked photos + form) → thanks
+  const step: "landing" | "review" | "thanks" =
+    sent !== null ? "thanks" : photos.length > 0 && uploadsEnabled ? "review" : "landing";
+
   return (
     <>
-      <header class="hero">
-        <div class="hand">{t.tagline}</div>
-        <h1>Irča &amp; Ondra</h1>
-        <div class="date">{t.date}</div>
-        <Couple label={t.coupleAlt} />
-      </header>
+      {step === "landing" ? (
+        <header class="hero">
+          <div class="hand">{t.tagline}</div>
+          <h1>Irča &amp; Ondra</h1>
+          <div class="date">{t.date}</div>
+          <Couple label={t.coupleAlt} />
+        </header>
+      ) : (
+        <header class="hero compact">
+          <h1>Irča &amp; Ondra</h1>
+        </header>
+      )}
 
-      {sent === null ? (
+      {step === "landing" && (
         <>
           {uploadsEnabled === null ? (
             <div class="drop loading" aria-busy="true" aria-label={t.loading}>
@@ -101,50 +111,56 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
               <div class="scribble">{t.pausedScribble}</div>
             </div>
           )}
-
-          {uploadsEnabled && photos.length > 0 && (
-            <>
-              <div class="pending">
-                {photos.map((p, i) => (
-                  <div class="mini fade-in" key={p.src} style={{ transform: `rotate(${rot(i)}deg)` }}>
-                    <div class="img" style={{ backgroundImage: `url(${p.src})` }} />
-                    <button class="x" aria-label={t.removePhoto} onClick={() => remove(i)} disabled={!!sending}>×</button>
-                  </div>
-                ))}
-              </div>
-
-              <div class="form">
-                <input
-                  class="input"
-                  type="text"
-                  value={caption}
-                  onInput={(e) => setCaption((e.currentTarget as HTMLInputElement).value)}
-                  placeholder={t.captionPlaceholder}
-                  maxLength={200}
-                />
-                {showNameField && (
-                  <input
-                    class="input"
-                    type="text"
-                    value={name}
-                    onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
-                    placeholder={t.namePlaceholder}
-                    maxLength={60}
-                    autocomplete="name"
-                  />
-                )}
-                {sending && (
-                  <div class="progress"><div style={{ width: `${(sending.done / sending.total) * 100}%` }} /></div>
-                )}
-                {error && <div class="error">{error}</div>}
-                <button class="btn" onClick={send} disabled={!!sending}>
-                  {sending ? t.sending(sending.done, sending.total) : t.send(t.photos(photos.length))}
-                </button>
-              </div>
-            </>
-          )}
         </>
-      ) : (
+      )}
+
+      {step === "review" && (
+        <>
+          <div class="pending">
+            {photos.map((p, i) => (
+              <div class="mini fade-in" key={p.src} style={{ transform: `rotate(${rot(i)}deg)` }}>
+                <div class="img" style={{ backgroundImage: `url(${p.src})` }} />
+                <button class="x" aria-label={t.removePhoto} onClick={() => remove(i)} disabled={!!sending}>×</button>
+              </div>
+            ))}
+            <label class="mini add" style={{ transform: `rotate(${rot(photos.length)}deg)` }} aria-label={t.addMoreTile}>
+              <div class="img">+</div>
+              <input type="file" accept="image/*" multiple onChange={pick} disabled={!!sending} />
+            </label>
+          </div>
+
+          <div class="form">
+            <input
+              class="input"
+              type="text"
+              value={caption}
+              onInput={(e) => setCaption((e.currentTarget as HTMLInputElement).value)}
+              placeholder={t.captionPlaceholder}
+              maxLength={200}
+            />
+            {showNameField && (
+              <input
+                class="input"
+                type="text"
+                value={name}
+                onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
+                placeholder={t.namePlaceholder}
+                maxLength={60}
+                autocomplete="name"
+              />
+            )}
+            {sending && (
+              <div class="progress"><div style={{ width: `${Math.round(sending.fraction * 100)}%` }} /></div>
+            )}
+            {error && <div class="error">{error}</div>}
+            <button class="btn" onClick={send} disabled={!!sending}>
+              {sending ? t.sending(sending.done, sending.total) : t.send(t.photos(photos.length))}
+            </button>
+          </div>
+        </>
+      )}
+
+      {step === "thanks" && sent !== null && (
         <div class="thanks fade-up">
           <div class="hand">{t.thanksScribble}</div>
           <h2>{t.thanksHeadline(t.photos(sent))}</h2>
