@@ -23,8 +23,13 @@
 | ✍️ Optional name and message | ⏸️ Pause uploads with a single switch |
 | 📶 Reliable uploads on weak venue wifi (resumable, with progress) | 🗑️ Delete unwanted photos |
 | 🖼️ Live shared gallery with thumbnails | 📦 Download all originals as a ZIP |
+| 🛏️ *Where we sleep*: search your name, see your bed on the floor plan | |
 
 No sign-up, no login for guests — just a QR code.
+
+**Navigation.** The upload page is the default; the other screens live in the URL hash, so the
+back button works and each one can be linked (or put on its own QR code):
+`#gallery`, `#accommodation` (or `#accommodation/krbovy` for one apartment), `#admin`.
 
 🌍 **Czech and English.** The language follows the phone's settings (Czech/Slovak → Czech,
 anything else → English). Guests can switch in the footer, and `?lang=en` / `?lang=cs` in the
@@ -56,8 +61,11 @@ admin   ──Google SSO──▶ allowed iff Firestore admins/<email> exists
 
 ```
 src/
-  App.tsx            screen switching (upload / gallery / login / admin)
-  screens/           Upload, Gallery, Login, Admin
+  App.tsx            screen switching (upload / gallery / accommodation / admin)
+  router.ts          hash-based navigation (#gallery, #accommodation/…, #admin)
+  screens/           Upload, Gallery, Accommodation, Login, Admin
+  accommodation.ts   apartments, floor plans, bed positions (% of the plan image)
+  guests.ts          hardcoded guest names per bed
   hooks.ts           useAuth, useSettings, useGallery
   i18n.ts            Czech + English strings, device language detection
   upload.ts          resumable uploads to Storage
@@ -65,7 +73,7 @@ src/
   styles.css         design tokens and styles
 functions/src/index.ts   onPhotoUploaded, onPhotoDeleted, downloadAll
 firestore.rules · storage.rules
-public/            icons, web manifest
+public/            icons, web manifest, plans/ (floor plan PNGs)
 ```
 
 ## Development
@@ -142,6 +150,8 @@ Each download creates a new file under `exports/` in Storage — old ones can be
 | Names | `src/screens/Upload.tsx` |
 | Date and all UI text (both languages) | `src/i18n.ts` |
 | Colours and fonts | `src/styles.css` (`:root`) |
+| Who sleeps where | `src/guests.ts` — a list of names per bed id; `[]` shows "not assigned yet" |
+| Floor plans, beds, building positions | `src/accommodation.ts` + `public/plans/` — bed `x, y` is the centre and `w, h` the size, all in % of the image. New plan images: drop the PNGs into `.mockup/layout/plans/` and run `node scripts/optimize-plans.mjs` (1200 px palette PNG, ~25 KB each) |
 | Thumbnail size | `THUMB_WIDTH` in `functions/src/index.ts` |
 | Allow video | `accept="image/*"` in `Upload.tsx` and `contentType.matches('image/.*')` in `storage.rules` (thumbnails are skipped for video) |
 | Gallery visible to admins only | in `firestore.rules`, set `allow read: if isAdmin();` on `photos` |

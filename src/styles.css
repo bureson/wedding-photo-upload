@@ -148,8 +148,9 @@ a { color: var(--accent-dark); }
 .thanks h2 { font-family: var(--serif); font-weight: 400; font-size: 29px; margin: 14px 0 10px; }
 .thanks p { font-size: 15.5px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 28px; text-wrap: pretty; }
 
+.links { margin-top: 26px; display: flex; flex-direction: column; gap: 2px; }
 .link-hand {
-  margin-top: 30px; padding: 12px; font-family: var(--hand); font-size: 23px; border: none;
+  padding: 10px 12px; font-family: var(--hand); font-size: 23px; border: none;
   background: transparent; color: var(--accent-dark); min-height: 44px; text-align: center;
 }
 .foot {
@@ -224,6 +225,129 @@ a { color: var(--accent-dark); }
   background: oklch(0.85 0.02 75) center / cover; cursor: pointer;
 }
 .lb-thumb.active { opacity: 1; border-color: white; }
+
+/* Accommodation ("where we sleep") */
+.acc { display: flex; flex-direction: column; flex: 1; }
+.round-x {
+  width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--line-soft); color: var(--ink-muted);
+  font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0;
+}
+.round-x:hover { background: var(--line); }
+.search { position: relative; margin-top: 18px; }
+.search .input { padding-right: 48px; -webkit-appearance: none; appearance: none; }
+.search .input::-webkit-search-cancel-button { display: none; }
+.search .round-x { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
+.results {
+  position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 5; background: white; border: 1px solid var(--line);
+  border-radius: 4px; box-shadow: 0 12px 30px rgba(60, 45, 30, 0.18); overflow: hidden; display: flex; flex-direction: column;
+  animation: fadeIn 0.15s ease both;
+}
+.result {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; border: none;
+  border-bottom: 1px solid var(--line-soft); background: white; padding: 12px 14px; min-height: 52px; color: var(--ink);
+}
+.result:last-child { border-bottom: none; }
+.result:hover { background: var(--accent-tint); }
+.result .who { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.result .n { font-size: 15.5px; font-weight: 600; }
+.result .w { font-size: 12.5px; color: var(--ink-muted); }
+.result .b { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: var(--accent-dark); flex-shrink: 0; }
+.results .empty { padding: 14px; }
+
+.acc .section { margin: 26px 0 10px; }
+.site {
+  position: relative; width: 100%; aspect-ratio: 1 / 1.18; background: white; border: 1px solid var(--line-soft);
+  box-shadow: 0 4px 14px rgba(60, 45, 30, 0.12); overflow: hidden;
+  background-image:
+    repeating-linear-gradient(0deg, oklch(0.9 0.015 75 / 0.55) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(90deg, oklch(0.9 0.015 75 / 0.55) 0 1px, transparent 1px 28px);
+}
+.site .path { position: absolute; border: 0 dashed var(--line); }
+.site .path.h { left: 8%; right: 8%; top: 42%; height: 0; border-top-width: 2px; }
+.site .path.v { top: 8%; bottom: 8%; left: 50%; width: 0; border-left-width: 2px; }
+.bld {
+  position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 1.5px solid var(--accent); border-radius: 4px; background: white; padding: 6px; text-align: center; color: var(--ink);
+  box-shadow: 0 3px 10px rgba(60, 45, 30, 0.14);
+}
+.bld:hover { background: var(--accent-tint); }
+.bld:active { transform: scale(0.97); }
+.bld .n { font-size: 13px; font-weight: 600; line-height: 1.15; text-wrap: balance; }
+.bld .c { font-size: 11px; color: var(--ink-muted); }
+.note { font-size: 12px; color: var(--ink-faint); line-height: 1.4; margin-top: 8px; }
+
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+.pill {
+  border: 1.5px solid var(--accent); border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600;
+  min-height: 38px; background: transparent; color: var(--accent-dark);
+}
+.pill.active { background: var(--accent); color: white; }
+.plan-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 22px 0 10px; }
+.plan-head .section { margin: 0; }
+.plan-head .hint { font-size: 12px; color: var(--ink-faint); }
+.plan {
+  position: relative; width: 100%; background: white; border: 1px solid var(--line-soft);
+  box-shadow: 0 4px 14px rgba(60, 45, 30, 0.16); overflow: hidden;
+}
+.plan img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; transition: opacity 0.25s; }
+.plan svg.sketch { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* While the plan image loads: shimmering stripes (same as the upload card), markers hidden */
+.plan.loading { background: var(--stripes); background-size: 45.25px 45.25px; animation: shimmer 1.4s linear infinite; }
+.plan.loading img, .plan.loading .bed-box, .plan.loading .bed-dot { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .plan.loading { animation: none; } }
+.bed-box {
+  position: absolute; border-radius: 4px; background: oklch(0.55 0.11 40 / 0.1); border: 2px solid oklch(0.55 0.11 40 / 0.5);
+  pointer-events: none; transition: background 0.15s, border-color 0.15s, opacity 0.25s;
+}
+.bed-box.on { background: oklch(0.55 0.11 40 / 0.26); border-color: var(--accent); }
+.bed-dot {
+  position: absolute; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: transparent; display: flex; align-items: center; justify-content: center; padding: 0; transition: opacity 0.25s;
+}
+.bed-dot span {
+  width: 30px; height: 30px; border-radius: 50%; background: white; color: var(--accent-dark); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;
+  box-shadow: 0 3px 10px rgba(60, 40, 10, 0.25); transition: width 0.15s, height 0.15s;
+}
+.bed-dot.occ span { background: var(--accent); color: white; }
+.bed-dot.on span { width: 38px; height: 38px; }
+.bed-dot.on.occ span { background: var(--ink); border-color: var(--ink); }
+
+.bedsheet-wrap { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 6; margin-top: 20px; }
+.bedsheet {
+  background: white; border: 1px solid var(--line-soft); border-radius: 12px; padding: 18px 20px 20px;
+  box-shadow: 0 -6px 40px rgba(60, 45, 30, 0.18); display: flex; flex-direction: column; gap: 12px; animation: fadeUp 0.25s ease both;
+}
+.bedsheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.bedsheet .round-x { width: 32px; height: 32px; }
+.bedsheet .kicker { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-dark); }
+.bedsheet .where { font-size: 13.5px; color: var(--ink-muted); margin-top: 3px; }
+.bedsheet .names { display: flex; flex-direction: column; gap: 6px; }
+.bedsheet .name { display: flex; align-items: center; gap: 10px; font-family: var(--hand); font-size: 27px; line-height: 1.1; color: #3a3128; }
+.bedsheet .name::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.bedsheet .none { font-size: 15px; font-style: italic; color: var(--ink-faint); }
+
+/* Wedding suite easter egg: beating heart marker, floating hearts, "do not disturb" */
+@keyframes heartBeat { 0%, 100% { transform: scale(1); } 14% { transform: scale(1.25); } 28% { transform: scale(1); } 42% { transform: scale(1.18); } 60% { transform: scale(1); } }
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(0.7) rotate(-8deg); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translateY(-420px) scale(1.15) rotate(10deg); opacity: 0; }
+}
+.bed-dot .heart { display: inline-block; font-style: normal; font-size: 15px; line-height: 1; animation: heartBeat 1.6s ease-in-out infinite; }
+.hearts { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.hearts span {
+  position: absolute; bottom: -24px; line-height: 1; color: var(--accent); opacity: 0;
+  animation: floatUp 3s ease-out infinite;
+}
+.hearts span.rose { color: #c98b7a; }
+.bedsheet .dnd { display: flex; flex-direction: column; gap: 2px; padding: 2px 0; }
+.bedsheet .dnd .hand { font-size: 32px; line-height: 1.1; color: #c98b7a; transform: rotate(-2deg); display: inline-block; align-self: flex-start; }
+.bedsheet .dnd .note { font-size: 13.5px; color: var(--ink-muted); line-height: 1.4; margin: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .bed-dot .heart { animation: none; }
+  .hearts { display: none; }
+}
 
 /* Login */
 .login { display: flex; flex-direction: column; padding-top: 48px; }

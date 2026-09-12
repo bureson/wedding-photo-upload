@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Couple } from "../Couple";
-import { setLang, useT } from "../i18n";
+import { useT } from "../i18n";
+import { LangToggle } from "../LangToggle";
 import { rot } from "../types";
 import { uploadPhotos, type PendingPhoto, type UploadProgress } from "../upload";
 
@@ -9,11 +10,12 @@ interface Props {
   uploadsEnabled: boolean | null;
   showNameField?: boolean;
   onGallery: () => void;
+  onAccommodation: () => void;
   onAdmin: () => void;
 }
 
-export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, onAdmin }: Props) {
-  const { t, lang } = useT();
+export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, onAccommodation, onAdmin }: Props) {
+  const { t } = useT();
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
   const [name, setName] = useState(() => localStorage.getItem("who") ?? "");
   const [caption, setCaption] = useState("");
@@ -169,20 +171,17 @@ export function UploadScreen({ uploadsEnabled, showNameField = true, onGallery, 
         </div>
       )}
 
-      <button class="link-hand" onClick={onGallery}>{t.galleryLink}</button>
+      <nav class="links">
+        <button class="link-hand" onClick={onGallery}>{t.galleryLink}</button>
+        <button class="link-hand" onClick={onAccommodation}>{t.accLink}</button>
+      </nav>
 
       <footer class="foot">
         <span>{t.footerNote}</span>
         <div class="foot-row">
           <button onClick={onAdmin}>{t.forCouple}</button>
           <span aria-hidden="true">·</span>
-          <button
-            class="lang"
-            onClick={() => setLang(lang === "cs" ? "en" : "cs")}
-            aria-label={lang === "cs" ? "Switch to English" : "Přepnout do češtiny"}
-          >
-            {lang === "cs" ? "English" : "Česky"}
-          </button>
+          <LangToggle />
         </div>
       </footer>
     </>
