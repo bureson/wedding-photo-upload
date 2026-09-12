@@ -156,7 +156,6 @@ function Overview({ t, lang, onBack, onOpen }: OverviewProps) {
           );
         })}
       </div>
-      <div class="note">{t.accSiteNote}</div>
     </>
   );
 }
