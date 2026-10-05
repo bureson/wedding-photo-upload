@@ -1,7 +1,7 @@
 {
-  "name": "Irča & Ondra — svatební fotky",
+  "name": "Irča & Ondra — svatba",
   "short_name": "Svatba",
-  "description": "Nahrajte fotky ze svatby Irči a Ondry.",
+  "description": "Poděkování svatebním hostům Irči a Ondry.",
   "start_url": "/",
   "display": "browser",
   "background_color": "#f3efe8",

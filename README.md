@@ -5,8 +5,7 @@
 <h1 align="center">Irča &amp; Ondra — wedding photos</h1>
 
 <p align="center">
-  A page for wedding guests: upload photos from your phone, browse the shared gallery —<br>
-  and the newlyweds download everything with one click.
+  The wedding was on 26 September 2026. The site now shows a thank-you page.
 </p>
 
 <p align="center">
@@ -15,156 +14,45 @@
 
 ---
 
-## Features
+## What's here
 
-| For guests | For the couple |
-|---|---|
-| 📸 Pick photos from the phone gallery, several at once | 🔐 Google sign-in (allow-listed emails only) |
-| ✍️ Optional name and message | ⏸️ Pause uploads with a single switch |
-| 📶 Reliable uploads on weak venue wifi (resumable, with progress) | 🗑️ Delete unwanted photos |
-| 🖼️ Live shared gallery with thumbnails | 📦 Download all originals as a ZIP |
-| 🛏️ *Where we sleep*: search your name, see your bed on the floor plan | |
-
-No sign-up, no login for guests — just a QR code.
-
-**Navigation.** The upload page is the default; the other screens live in the URL hash, so the
-back button works and each one can be linked (or put on its own QR code):
-`#gallery`, `#accommodation` (or `#accommodation/krbovy` for one apartment), `#admin`.
-
-🌍 **Czech and English.** The language follows the phone's settings (Czech/Slovak → Czech,
-anything else → English). Guests can switch in the footer, and `?lang=en` / `?lang=cs` in the
-URL forces a language — handy for a second QR code for international guests.
-
-## How it works
+A single static page, `public/index.html` — inline CSS and SVG, no JavaScript, no build step.
+It is served by Firebase Hosting so the QR codes printed for the wedding keep working; every
+path (and old hash links like `#gallery`) lands on the same page.
 
 ```
-guest phone ──upload──▶ Storage  uploads/<uid>/<id>.jpg
-                            │  onPhotoUploaded (Cloud Function)
-                            ├─▶ thumbs/<id>.jpg            800px thumbnail
-                            └─▶ Firestore photos/<id>      {who, caption, url, thumbUrl, createdAt}
-gallery ◀──live (onSnapshot)── Firestore photos
-admin   ──Google SSO──▶ allowed iff Firestore admins/<email> exists
-        ──toggle─────▶ Firestore settings/app {uploadsEnabled}   (enforced by onPhotoUploaded)
-        ──delete─────▶ Firestore photos/<id> → onPhotoDeleted removes the files
-        ──ZIP────────▶ downloadAll → exports/<timestamp>.zip → download link
+public/          index.html, icons, web manifest
+firebase.json    hosting only
 ```
 
-- Guests are signed in **anonymously** (invisible to them; only so security rules can apply).
-- Storage rules: images only, max 50 MB, own folder only. The "uploads paused" switch is enforced by the Cloud Function.
-- Photo documents are created exclusively by the Cloud Function — nothing can be spoofed into the gallery from a browser.
+## The original app
 
-## Stack
+During the event this was a Preact + Firebase app: guests uploaded photos from their phones,
+browsed a live gallery and looked up their bed on the floor plans; the couple could pause
+uploads, delete photos and download everything as a ZIP. That version (frontend, Cloud Functions,
+Firestore and Storage rules) is preserved under the git tag **`event-final`**:
 
-**Frontend** · [Preact](https://preactjs.com) + [Vite](https://vite.dev) + TypeScript, no router or state library
-**Backend** · Firebase — Hosting, Auth (anonymous + Google), Firestore, Storage, Cloud Functions 2nd gen (Node 22)
-**Functions** · [sharp](https://sharp.pixelplumbing.com) for thumbnails, [archiver](https://www.archiverjs.com) for the ZIP
-
+```sh
+git checkout event-final
 ```
-src/
-  App.tsx            screen switching (upload / gallery / accommodation / admin)
-  router.ts          hash-based navigation (#gallery, #accommodation/…, #admin)
-  screens/           Upload, Gallery, Accommodation, Login, Admin
-  accommodation.ts   apartments, floor plans, bed positions (% of the plan image)
-  guests.ts          hardcoded guest names per bed
-  hooks.ts           useAuth, useSettings, useGallery
-  i18n.ts            Czech + English strings, device language detection
-  upload.ts          resumable uploads to Storage
-  Couple.tsx         animated bride & groom in the header
-  styles.css         design tokens and styles
-functions/src/index.ts   onPhotoUploaded, onPhotoDeleted, downloadAll
-firestore.rules · storage.rules
-public/            icons, web manifest, plans/ (floor plan PNGs)
-```
+
+<p align="center">
+  <img src="docs/screenshots/mobile/01-upload.png" width="260" alt="Upload screen">
+  <img src="docs/screenshots/mobile/03-accommodation.png" width="260" alt="Accommodation overview">
+</p>
 
 ## Development
 
-```sh
-npm install
-npm --prefix functions install
-npm run dev          # http://localhost:5173 — talks to the live Firebase project
-```
-
-The (public) Firebase config lives in `.env.production`; create `.env.local` to override it
-locally (template in `.env.example`).
-
-### With emulators
+Open `public/index.html` in a browser, or serve it the way Hosting does:
 
 ```sh
-# terminal 1
-npm --prefix functions run watch
-npm run emulators                      # UI: http://127.0.0.1:4000
-
-# terminal 2 — set VITE_USE_EMULATORS=true in .env.local
-npm run dev
+firebase emulators:start --only hosting     # http://localhost:5000
 ```
-
-In the emulator, add your email to the `admins` collection in Firestore; the Auth emulator lets
-you sign in with Google using any made-up account.
 
 ## Deployment
 
-### Automatic (GitHub Actions)
+- **Pull request** → temporary preview URL posted as a PR comment.
+- **Push to `main`** → deploy to the live site.
 
-- **Pull request** → typecheck, build, temporary preview URL posted as a PR comment.
-- **Push to `main`** → typecheck, build, deploy to the live site.
-
-CI deploys **hosting** (the frontend) only. It was set up with `firebase init hosting:github`,
-which created the service account and the GitHub secret
-`FIREBASE_SERVICE_ACCOUNT_WEDDING_PHOTO_UPLOAD_6A020` automatically.
-
-### Manual (functions and rules)
-
-These change rarely and are deployed by hand:
-
-```sh
-firebase login
-firebase deploy --only "functions,firestore,storage"
-```
-
-### How "pause uploads" is enforced
-
-The admin switch writes `settings/app.uploadsEnabled`. The upload page hides the upload card when
-it's false, and `onPhotoUploaded` deletes any file that still arrives while paused (e.g. from a
-page opened before the pause). Storage rules deliberately don't read Firestore — a cross-service
-`firestore.get()` in `storage.rules` was unreliable on this project (random `storage/unauthorized`
-for valid uploads), so the check lives in the function instead.
-## Administration
-
-### Adding an admin
-
-Firebase console → **Firestore** → collection `admins` → new document with **ID = lowercase email**
-(e.g. `ondrej@triggerz.net`). No fields needed. That's it — no redeploy.
-
-### The admin screen
-
-At the bottom of the page, *pro novomanžele* → Google sign-in → **Správa**:
-pause uploads, delete a photo, download the ZIP.
-
-The ZIP contains originals named `2026-09-26-21-14-05_Teta_Jana_0001.jpg` (time, name, sequence).
-Each download creates a new file under `exports/` in Storage — old ones can be deleted in the console.
-
-## Customising
-
-| What | Where |
-|---|---|
-| Names | `src/screens/Upload.tsx` |
-| Date and all UI text (both languages) | `src/i18n.ts` |
-| Colours and fonts | `src/styles.css` (`:root`) |
-| Who sleeps where | `src/guests.ts` — a list of names per bed id; `[]` shows "not assigned yet" |
-| Floor plans, beds, building positions | `src/accommodation.ts` + `public/plans/` — bed `x, y` is the centre and `w, h` the size, all in % of the image. New plan images: drop the PNGs into `.mockup/layout/plans/` and run `node scripts/optimize-plans.mjs` (1200 px palette PNG, ~25 KB each) |
-| Thumbnail size | `THUMB_WIDTH` in `functions/src/index.ts` |
-| Allow video | `accept="image/*"` in `Upload.tsx` and `contentType.matches('image/.*')` in `storage.rules` (thumbnails are skipped for video) |
-| Gallery visible to admins only | in `firestore.rules`, set `allow read: if isAdmin();` on `photos` |
-
-## Notes
-
-- iOS converts HEIC → JPEG when picking from the photo library, so thumbnails work. If a raw HEIC
-  does slip through, the photo is still stored; only the thumbnail is skipped.
-- The Firebase web config in the repo **is not a secret** — it identifies the project; the rules are
-  the security boundary.
-- Everything runs in `europe-west1` (bucket, functions, Firestore). If the bucket is ever recreated
-  elsewhere, `onPhotoUploaded` must move to the bucket's region (`PHOTOS_BUCKET` in
-  `functions/src/index.ts`).
-- Photos are downscaled on the phone before upload (longest edge 2048 px, JPEG 85 %) — ~1 MB instead
-  of 4–8 MB, which is what makes uploads fast on venue wifi. EXIF is stripped in the process; the
-  upload time is kept as `createdAt`.
+Both run through GitHub Actions with the `FIREBASE_SERVICE_ACCOUNT_WEDDING_PHOTO_UPLOAD_6A020`
+secret. To deploy by hand: `firebase deploy --only hosting`.

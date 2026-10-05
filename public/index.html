@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f3efe8" />
+    <title>Irča &amp; Ondra — děkujeme!</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="Svatba" />
+    <meta property="og:title" content="Irča &amp; Ondra — děkujeme!" />
+    <meta property="og:description" content="Svatba proběhla. Děkujeme, že jste s námi slavili, tančili a fotili." />
+    <meta property="og:image" content="/icon-512.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gloock&family=Caveat:wght@600&family=Karla:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: oklch(0.95 0.015 75);
+        --ink: #2e2620;
+        --ink-soft: #6b6154;
+        --ink-faint: #a09585;
+        --line: #3a3128;
+        --accent: oklch(0.55 0.11 40);
+        --accent-deep: oklch(0.5 0.11 40);
+        --tape: oklch(0.87 0.05 90);
+        --paper: oklch(0.97 0.012 75);
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+      }
+
+      body {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        justify-content: center;
+        font-family: Karla, sans-serif;
+        color: var(--ink);
+      }
+
+      main {
+        width: 100%;
+        max-width: 430px;
+        display: flex;
+        flex-direction: column;
+        padding: 0 24px 40px;
+        box-sizing: border-box;
+      }
+
+      header {
+        text-align: center;
+        padding: 52px 0 0;
+        animation: fadeUp 0.5s ease both;
+      }
+
+      .kicker {
+        font-family: Caveat, cursive;
+        font-size: 23px;
+        color: var(--accent);
+        transform: rotate(-2deg);
+      }
+
+      h1 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 42px;
+        line-height: 1.08;
+        margin: 10px 0 8px;
+      }
+
+      .date {
+        font-size: 13.5px;
+        letter-spacing: 0.1em;
+        color: #7d7264;
+      }
+
+      .polaroid {
+        position: relative;
+        background: white;
+        padding: 14px 14px 18px;
+        box-shadow: 0 4px 14px rgba(60, 45, 30, 0.18);
+        transform: rotate(-2deg);
+        margin: 36px 18px 0;
+        animation: fadeIn 0.6s ease 0.15s both;
+      }
+
+      .tape {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%) rotate(2deg);
+        width: 88px;
+        height: 26px;
+        background: oklch(0.87 0.05 90 / 0.75);
+        z-index: 1;
+      }
+
+      .photo {
+        aspect-ratio: 1;
+        background: var(--paper);
+        overflow: hidden;
+      }
+
+      .photo svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .polaroid figcaption {
+        font-family: Caveat, cursive;
+        font-size: 22px;
+        text-align: center;
+        margin-top: 12px;
+        color: #5c5245;
+      }
+
+      .thanks {
+        text-align: center;
+        margin-top: 40px;
+        animation: fadeUp 0.6s ease 0.3s both;
+      }
+
+      h2 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 28px;
+        margin: 0 0 12px;
+      }
+
+      .thanks p {
+        font-size: 15.5px;
+        line-height: 1.6;
+        color: var(--ink-soft);
+        margin: 14px 0 0;
+        text-wrap: pretty;
+      }
+
+      .thanks h2 + p {
+        margin-top: 0;
+      }
+
+      .thanks p.en {
+        font-size: 14px;
+        font-style: italic;
+        color: #8a7f70;
+        margin-top: 20px;
+      }
+
+      .signature {
+        font-family: Caveat, cursive;
+        font-size: 26px;
+        color: var(--accent-deep);
+        margin-top: 24px;
+        transform: rotate(-2deg);
+      }
+
+      footer {
+        margin-top: auto;
+        padding-top: 48px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--ink-faint);
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: none; }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes hopA {
+        0%, 100% { transform: translateY(0) rotate(-3deg); }
+        50% { transform: translateY(-8px) rotate(3deg); }
+      }
+      @keyframes hopB {
+        0%, 100% { transform: translateY(-8px) rotate(3deg); }
+        50% { transform: translateY(0) rotate(-3deg); }
+      }
+      @keyframes armWave {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(-35deg); }
+      }
+      @keyframes floatHeart {
+        0% { transform: translateY(0) scale(0.6); opacity: 0; }
+        15% { opacity: 1; }
+        100% { transform: translateY(-70px) scale(1.1); opacity: 0; }
+      }
+      @keyframes confetti {
+        0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+        10% { opacity: 1; }
+        100% { transform: translateY(190px) rotate(540deg); opacity: 0; }
+      }
+      @keyframes shadowPulse {
+        0%, 100% { transform: scaleX(1); opacity: 0.18; }
+        50% { transform: scaleX(0.8); opacity: 0.1; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        svg * {
+          animation: none !important;
+        }
+        /* confetti and hearts are invisible at rest; shadows need their resting opacity */
+        .confetti,
+        .hearts {
+          display: none;
+        }
+        .shadow {
+          opacity: 0.18;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="kicker">svatba proběhla ♡</div>
+        <h1>Irča &amp; Ondra</h1>
+        <div class="date">26. ZÁŘÍ 2026</div>
+      </header>
+
+      <figure class="polaroid">
+        <div class="tape"></div>
+        <div class="photo">
+          <svg viewBox="0 0 240 240" role="img" aria-label="Tančící novomanželé">
+            <g class="confetti" stroke="none">
+              <rect x="30" y="0" width="6" height="10" rx="1" fill="oklch(0.55 0.11 40)" style="animation:confetti 4.2s linear infinite;"></rect>
+              <rect x="70" y="0" width="5" height="9" rx="1" fill="oklch(0.87 0.05 90)" style="animation:confetti 3.6s linear 0.7s infinite;"></rect>
+              <circle cx="110" cy="0" r="3.5" fill="oklch(0.7 0.06 260)" style="animation:confetti 4.8s linear 1.4s infinite;"></circle>
+              <rect x="150" y="0" width="6" height="10" rx="1" fill="oklch(0.55 0.11 40)" style="animation:confetti 3.9s linear 2.1s infinite;"></rect>
+              <circle cx="190" cy="0" r="3" fill="oklch(0.87 0.05 90)" style="animation:confetti 4.4s linear 0.3s infinite;"></circle>
+              <rect x="215" y="0" width="5" height="9" rx="1" fill="oklch(0.7 0.06 140)" style="animation:confetti 3.7s linear 1.8s infinite;"></rect>
+              <rect x="12" y="0" width="5" height="8" rx="1" fill="oklch(0.7 0.06 140)" style="animation:confetti 4.6s linear 2.6s infinite;"></rect>
+            </g>
+
+            <ellipse class="shadow" cx="88" cy="206" rx="28" ry="5" fill="#3a3128" style="animation:shadowPulse 0.9s ease-in-out infinite;transform-origin:88px 206px;"></ellipse>
+            <ellipse class="shadow" cx="152" cy="206" rx="24" ry="5" fill="#3a3128" style="animation:shadowPulse 0.9s ease-in-out 0.45s infinite;transform-origin:152px 206px;"></ellipse>
+
+            <g stroke="#3a3128" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <!-- bride -->
+              <g style="animation:hopA 0.9s ease-in-out infinite;transform-origin:88px 200px;">
+                <path d="M82 112 Q70 100 62 84" style="animation:armWave 0.9s ease-in-out infinite;transform-origin:82px 112px;"></path>
+                <circle cx="88" cy="84" r="20" fill="oklch(0.97 0.01 75)"></circle>
+                <path d="M68 78 Q65 58 88 60 Q111 58 108 78" fill="#3a3128"></path>
+                <path d="M67 76 Q60 96 68 108 M109 76 Q116 96 108 108" stroke-width="2.5"></path>
+                <circle cx="88" cy="62" r="4.5" fill="oklch(0.87 0.05 90)" stroke-width="2"></circle>
+                <path d="M81 82 Q82 79 84 82 M92 82 Q93 79 95 82" stroke-width="2.5"></path>
+                <path d="M80 91 Q88 100 96 91" fill="white" stroke-width="2.5"></path>
+                <circle cx="76" cy="90" r="3" fill="oklch(0.8 0.08 20)" stroke="none" opacity="0.6"></circle>
+                <circle cx="100" cy="90" r="3" fill="oklch(0.8 0.08 20)" stroke="none" opacity="0.6"></circle>
+                <path d="M88 104 L64 196 Q88 208 112 196 Z" fill="white"></path>
+                <path d="M76 140 L100 140 M71 166 L105 166" stroke-width="1.8" opacity="0.35"></path>
+                <path d="M96 116 Q110 126 120 128"></path>
+              </g>
+              <!-- groom -->
+              <g style="animation:hopB 0.9s ease-in-out infinite;transform-origin:152px 200px;">
+                <circle cx="152" cy="84" r="20" fill="oklch(0.97 0.01 75)"></circle>
+                <path d="M132 80 Q132 60 152 60 Q172 60 172 80 L166 74 Q152 68 138 74 Z" fill="#3a3128"></path>
+                <path d="M144 82 L148 82 M156 82 L160 82" stroke-width="3"></path>
+                <path d="M143 91 Q152 101 161 91" fill="white" stroke-width="2.5"></path>
+                <circle cx="140" cy="90" r="3" fill="oklch(0.8 0.08 20)" stroke="none" opacity="0.6"></circle>
+                <circle cx="164" cy="90" r="3" fill="oklch(0.8 0.08 20)" stroke="none" opacity="0.6"></circle>
+                <path d="M140 104 L138 196 M164 104 L166 196 M138 196 L166 196"></path>
+                <path d="M140 104 Q152 112 164 104"></path>
+                <path d="M152 107 L147 118 L152 129 L157 118 Z" fill="oklch(0.55 0.11 40)" stroke-width="2"></path>
+                <path d="M140 116 Q128 124 120 128"></path>
+                <path d="M164 114 Q178 100 182 82" style="animation:armWave 0.9s ease-in-out 0.45s infinite;transform-origin:164px 114px;transform-box:view-box;"></path>
+              </g>
+            </g>
+
+            <g class="hearts" stroke="none">
+              <path d="M116 112 q3 -6 6 0 q3 -6 6 0 q0 4.5 -6 9 q-6 -4.5 -6 -9" fill="oklch(0.55 0.11 40)" style="animation:floatHeart 2.6s ease-out infinite;transform-origin:122px 115px;"></path>
+              <path d="M104 106 q2 -4 4 0 q2 -4 4 0 q0 3 -4 6 q-4 -3 -4 -6" fill="oklch(0.65 0.1 20)" style="animation:floatHeart 2.6s ease-out 0.9s infinite;transform-origin:108px 108px;"></path>
+              <path d="M130 104 q2.5 -5 5 0 q2.5 -5 5 0 q0 3.5 -5 7.5 q-5 -3.5 -5 -7.5" fill="oklch(0.87 0.05 90)" style="animation:floatHeart 2.6s ease-out 1.7s infinite;transform-origin:135px 107px;"></path>
+            </g>
+          </svg>
+        </div>
+        <figcaption>a žili šťastně až do smrti ✓</figcaption>
+      </figure>
+
+      <section class="thanks">
+        <h2>Děkujeme!</h2>
+        <p>Za to, že jste s námi slavili, tančili a fotili. Bylo to přesně takové, jaké jsme si to přáli — a ještě lepší.</p>
+        <p>Nahrávání fotek je už uzavřené. Všechny vaše úlovky máme v bezpečí a budeme se k nim vracet ještě hodně dlouho.</p>
+        <p class="en" lang="en">Thank you for celebrating, dancing and snapping photos with us. Uploads are now closed — every picture is safe with us.</p>
+        <div class="signature">Irča &amp; Ondra</div>
+      </section>
+
+      <footer>♡ 26. 9. 2026</footer>
+    </main>
+  </body>
+</html>
