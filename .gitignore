@@ -4,6 +4,7 @@
 # Leftovers from the original app, if still on disk
 node_modules/
 dist/
+.vite/
 functions/
 .env.local
 
